@@ -69,3 +69,8 @@ setprop logcat.live disable
 # CPU Core Control
 setprop ro.vendor.qti.core_ctl_min_cpu 4
 setprop ro.vendor.qti.core_ctl_max_cpu 4
+
+# Start Kamui Auto
+KamuiAuto
+
+# Notification (Later)
