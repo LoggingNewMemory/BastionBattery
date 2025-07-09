@@ -37,8 +37,20 @@ ui_print "      INSTALLING        "
 ui_print " "
 sleep 1.5
 
+#######################################
+# Extract Main Kamui Script
+#######################################
 unzip -o "$ZIPFILE" 'Kamui/*' -d $MODPATH >&2
 set_perm_recursive $MODPATH/Kamui 0 0 0774 0774
+
+#######################################
+# Copy Kamui Hehe Emote to temp
+#######################################
+cp -r "$MODPATH"/KamuiHehe.png /data/local/tmp >/dev/null 2>&1
+
+#######################################
+# Install Kamui Auto
+#######################################
 
 # Define paths and target binary name
 BIN_PATH=$MODPATH/system/bin
