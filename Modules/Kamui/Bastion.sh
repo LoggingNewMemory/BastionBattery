@@ -71,6 +71,9 @@ setprop ro.vendor.qti.core_ctl_min_cpu 4
 setprop ro.vendor.qti.core_ctl_max_cpu 4
 
 # Start Kamui Auto
+# By default. the Governor is sugov_ext (Yea Yamada use custom kernel)
+# So I set this to set the Governor to Schedhorizon / Schedutil (hehe)
+sh /data/adb/modules/BastionBattery/Kamui/KamuiBalanced.sh 
 KamuiAuto
 
 # Notification (Later)
