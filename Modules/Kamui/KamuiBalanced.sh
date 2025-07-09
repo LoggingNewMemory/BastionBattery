@@ -9,7 +9,7 @@ tweak() {
 check_governor() {
     local governor="$1"
     local available_governors="$2"
-    echo "$available_governors" | grep -q "\b$governor\b"
+    echo "$available_governors" | grep -q "$governor"
 }
 
 for path in /sys/devices/system/cpu/cpufreq/policy*; do
