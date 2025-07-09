@@ -103,5 +103,22 @@ fi
 rm -rf $TEMP_EXTRACT_DIR
 
 sleep 1.5
+# Tribute to Kamui Bastion
 ui_print " "
-ui_print "Haah... Kimochi Yokata (Kamui)"
+case "$((RANDOM % 15 + 1))" in
+1) ui_print "A new weapon! No one can stop me now!" ;;
+2) ui_print "Woah! I'm the leader now! Don't worry, I'll lead us to victory!" ;;
+3) ui_print "That mission had bonus rewards! Hope it's a weapon!" ;;
+4) ui_print "Heyo—! Mornin'! Y'all ready for the next battle?!" ;;
+5) ui_print "Commandant! When are you going to take me on another mission—?!" ;;
+6) ui_print "Let's go, let's go! Time for our next mission!" ;;
+7) ui_print "Did you see that? My ultimate move!" ;;
+8) ui_print "Can't we just smash our way through?" ;;
+9) ui_print "It's pretty late. You trying to see the stars?" ;;
+10) ui_print "I feel the power pouring in!" ;;
+11) ui_print "My turn!" ;;
+12) ui_print "No one understands weaponry better than me!" ;;
+13) ui_print "You wanna spar? Let's go!" ;;
+14) ui_print "Leave this to me. I'll take care of it!" ;;
+15) ui_print "Haah Kimochi Yokatta" ;;
+esac
