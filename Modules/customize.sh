@@ -28,7 +28,7 @@ ui_print "------------------------------------"
 ui_print "            MODULE INFO             "
 ui_print "------------------------------------"
 ui_print "Name : Bastion Battery"
-ui_print "Version : 1.0"
+ui_print "Version : 2.0"
 ui_print "Support Root : Magisk / KernelSU / APatch"
 ui_print " "
 sleep 1.5
@@ -91,4 +91,5 @@ fi
 rm -rf $TEMP_EXTRACT_DIR
 
 sleep 1.5
+ui_print " "
 ui_print "Haah... Kimochi Yokata (Kamui)"
