@@ -41,7 +41,7 @@ unzip -o "$ZIPFILE" 'Kamui/*' -d $MODPATH >&2
 set_perm_recursive $MODPATH/Kamui 0 0 0774 0774
 
 # Define paths and target binary name
-BIN_PATH=/data/adb/modules/BastionBattery/Kamui
+BIN_PATH=$MODPATH/system/bin
 TARGET_BIN_NAME=KamuiAuto
 TARGET_BIN_PATH=$BIN_PATH/$TARGET_BIN_NAME
 TEMP_EXTRACT_DIR=$TMPDIR/kamui_extract # Use a temporary directory for extraction
