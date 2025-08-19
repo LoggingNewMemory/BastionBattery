@@ -28,7 +28,7 @@ ui_print "------------------------------------"
 ui_print "            MODULE INFO             "
 ui_print "------------------------------------"
 ui_print "Name : Bastion Battery"
-ui_print "Version : 2.0"
+ui_print "Version : 3.0"
 ui_print "Support Root : Magisk / KernelSU / APatch"
 ui_print " "
 sleep 1.5
@@ -87,41 +87,6 @@ if [ -f "$SOURCE_EXTRACTED_PATH" ]; then
   ui_print "  - KamuiAuto installed successfully"
 else
   ui_print "! ERROR: Failed to extract KamuiAuto from zip path '$SOURCE_ZIP_PATH'"
-fi
-
-# --- Install inotify-tools (inotifywait & inotifywatch) ---
-ui_print "- Processing inotify-tools..."
-
-if [[ "$ARCH" == *"arm64"* ]]; then
-  # Path to the directory inside the zip
-  SOURCE_DIR_ZIP_PATH='Kamui/Inotify/build_arm64'
-else
-  SOURCE_DIR_ZIP_PATH='Kamui/Inotify/build_arm32'
-fi
-
-# Extract both binaries by extracting the directory's contents
-unzip -o "$ZIPFILE" "${SOURCE_DIR_ZIP_PATH}/*" -d $TEMP_EXTRACT_DIR >&2
-
-# --- Process inotifywait ---
-SOURCE_FILE=$TEMP_EXTRACT_DIR/${SOURCE_DIR_ZIP_PATH}/inotifywait
-TARGET_FILE=$BIN_PATH/inotifywait
-if [ -f "$SOURCE_FILE" ]; then
-  mv "$SOURCE_FILE" "$TARGET_FILE"
-  set_perm $TARGET_FILE 0 0 0755
-  ui_print "  - inotifywait installed successfully"
-else
-  ui_print "! ERROR: Failed to extract inotifywait"
-fi
-
-# --- Process inotifywatch ---
-SOURCE_FILE=$TEMP_EXTRACT_DIR/${SOURCE_DIR_ZIP_PATH}/inotifywatch
-TARGET_FILE=$BIN_PATH/inotifywatch
-if [ -f "$SOURCE_FILE" ]; then
-  mv "$SOURCE_FILE" "$TARGET_FILE"
-  set_perm $TARGET_FILE 0 0 0755
-  ui_print "  - inotifywatch installed successfully"
-else
-  ui_print "! ERROR: Failed to extract inotifywatch"
 fi
 
 # Clean up temporary extraction directory
