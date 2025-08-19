@@ -69,15 +69,15 @@ ARCH=$(getprop ro.product.cpu.abi)
 if [[ "$ARCH" == *"arm64"* ]]; then
   # 64-bit architecture
   ui_print "- Detected 64-bit ARM architecture ($ARCH)"
-  SOURCE_BIN_ZIP_PATH='Kamui/KamuiAuto_arm64' # Path inside the zip file
-  SOURCE_BIN_EXTRACTED_PATH=$TEMP_EXTRACT_DIR/Kamui/KamuiAuto_arm64 # Path after extraction to temp dir
+  SOURCE_BIN_ZIP_PATH='Kamui/KamuiAuto/KamuiAuto_arm64' # Path inside the zip file
+  SOURCE_BIN_EXTRACTED_PATH=$TEMP_EXTRACT_DIR/KamuiAuto_arm64 # Path after extraction to temp dir
   ui_print "- Extracting $SOURCE_BIN_ZIP_PATH..."
   unzip -o "$ZIPFILE" "$SOURCE_BIN_ZIP_PATH" -d $TEMP_EXTRACT_DIR >&2
 else
   # Assume 32-bit architecture (or non-arm64)
   ui_print "- Detected 32-bit ARM architecture or other ($ARCH)"
-  SOURCE_BIN_ZIP_PATH='Kamui/KamuiAuto_arm32' # Path inside the zip file
-  SOURCE_BIN_EXTRACTED_PATH=$TEMP_EXTRACT_DIR/Kamui/KamuiAuto_arm32 # Path after extraction to temp dir
+  SOURCE_BIN_ZIP_PATH='Kamui/KamuiAuto/KamuiAuto_arm32' # Path inside the zip file
+  SOURCE_BIN_EXTRACTED_PATH=$TEMP_EXTRACT_DIR/KamuiAuto_arm32 # Path after extraction to temp dir
   ui_print "- Extracting $SOURCE_BIN_ZIP_PATH..."
   unzip -o "$ZIPFILE" "$SOURCE_BIN_ZIP_PATH" -d $TEMP_EXTRACT_DIR >&2
 fi
