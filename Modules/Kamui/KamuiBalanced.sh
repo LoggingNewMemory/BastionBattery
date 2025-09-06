@@ -50,7 +50,7 @@ cpufreq_unlock() {
 #############################
 # Read LIFE Mode Config
 #############################
-KAMUI_CONFIG="/data/adb/modules/BastionBattery/kamui.txt"
+KAMUI_CONFIG="/data/adb/modules/BastionBattery/Kamui.txt"
 LIFE=$(grep '^LIFE=' "$KAMUI_CONFIG" | cut -d'=' -f2)
 
 #############################
