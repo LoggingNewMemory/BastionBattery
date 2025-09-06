@@ -10,6 +10,21 @@ ui_print() {
   echo "$1"
 }
 
+# Read the current LIFE setting to display its status
+if [ -f "$CONFIG_FILE" ]; then
+    CURRENT_LIFE=$(grep '^LIFE=' "$CONFIG_FILE" | cut -d'=' -f2)
+else
+    # Default to 0 (Disabled) if the file doesn't exist yet
+    CURRENT_LIFE=0
+fi
+
+# Set the status string for the UI based on the current value
+if [ "$CURRENT_LIFE" -eq 1 ]; then
+    STATUS_STRING="Enabled"
+else
+    STATUS_STRING="Disabled"
+fi
+
 ui_print " "
 ui_print "LIFE Mode: Halfing Max CPU Freq for battery"
 ui_print "Conservation in exchange of reduced performance"
@@ -18,6 +33,7 @@ ui_print "Please use the volume keys to make a selection."
 ui_print " "
 ui_print "  Volume UP   = Set Enable LIFE Mode"
 ui_print "  Volume DOWN = Set Disable LIFE Mode"
+ui_print "  Current: LIFE Mode $STATUS_STRING"
 ui_print " "
 ui_print "Note: No need to reboot, effective immediately"
 ui_print " "
