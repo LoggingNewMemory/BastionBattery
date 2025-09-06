@@ -1,5 +1,3 @@
-#!/system/bin/sh
-
 tweak() {
     if [ -e "$2" ]; then
         chmod 644 "$2" >/dev/null 2>&1
@@ -9,53 +7,49 @@ tweak() {
 }
 
 #############################
-# CPU Powersave Functions
+# Set Governor To Schedhorizon / Schedutil
 #############################
 
-# Sets PPM CPU frequency limits to minimum for powersave
-cpufreq_ppm_min_perf() {
-    cluster=-1
-    for path in /sys/devices/system/cpu/cpufreq/policy*; do
-        ((cluster++))
-        local cpu_minfreq
-        cpu_minfreq=$(<"$path/cpuinfo_min_freq")
-        tweak "$cluster $cpu_minfreq" /proc/ppm/policy/hard_userlimit_max_cpu_freq
-        tweak "$cluster $cpu_minfreq" /proc/ppm/policy/hard_userlimit_min_cpu_freq
-    done
+check_governor() {
+    local governor="$1"
+    local available_governors="$2"
+    echo "$available_governors" | grep -q "$governor"
 }
 
-# Sets standard CPU frequency limits to minimum for powersave
-cpufreq_min_perf() {
-    for path in /sys/devices/system/cpu/*/cpufreq; do
-        local cpu_minfreq
-        cpu_minfreq=$(<"$path/cpuinfo_min_freq")
-        tweak "$cpu_minfreq" "$path/scaling_max_freq"
-        tweak "$cpu_minfreq" "$path/scaling_min_freq"
-    done
-    chmod -f 444 /sys/devices/system/cpu/cpufreq/policy*/scaling_*_freq
-}
-
-#############################
-# Set Governor To Minimum
-#############################
-
-# Switch to powersave governor
 for path in /sys/devices/system/cpu/cpufreq/policy*; do
-	tweak powersave "$path/scaling_governor"
-done 
+    if [ -e "$path/scaling_available_governors" ]; then
+        available_governors=$(cat "$path/scaling_available_governors")
+        
+        if check_governor "schedhorizon" "$available_governors"; then
+            tweak schedhorizon "$path/scaling_governor"
+        elif check_governor "schedutil" "$available_governors"; then
+            tweak schedutil "$path/scaling_governor"
+        fi
+    fi
+done
 
 #############################
-# Set CPU Freq to Minimum
+# Set CPU Freq to Normal
 #############################
 
-# Check if PPM exists and apply the correct frequency setting method
-if [ -d "/proc/ppm/policy" ]; then
-    cpufreq_ppm_min_perf
-else
-    cpufreq_min_perf
-fi
+cluster=0
+	for path in /sys/devices/system/cpu/cpufreq/policy*; do
+		cpu_maxfreq=$(<"$path/cpuinfo_max_freq")
+		cpu_minfreq=$(<"$path/cpuinfo_min_freq")
+		tweak "$cluster $cpu_maxfreq" /proc/ppm/policy/hard_userlimit_max_cpu_freq
+		tweak "$cluster $cpu_minfreq" /proc/ppm/policy/hard_userlimit_min_cpu_freq
+		((cluster++))
+	done
+
+for path in /sys/devices/system/cpu/*/cpufreq; do
+		cpu_maxfreq=$(<"$path/cpuinfo_max_freq")
+		cpu_minfreq=$(<"$path/cpuinfo_min_freq")
+		tweak "$cpu_maxfreq" "$path/scaling_max_freq"
+		tweak "$cpu_minfreq" "$path/scaling_min_freq"
+	done
+	chmod -f 644 /sys/devices/system/cpu/cpufreq/policy*/scaling_*_freq
 
 #############################
-# Power Save Mode On
+# Power Save Mode Off
 #############################
-settings put global low_power 1
+settings put global low_power 0
