@@ -11,10 +11,15 @@ ui_print() {
 }
 
 ui_print " "
+ui_print "LIFE Mode: Halfing Max CPU Freq for battery"
+ui_print "Conservation in exchange of reduced performance"
+ui_print " "
 ui_print "Please use the volume keys to make a selection."
 ui_print " "
-ui_print "  Volume UP   = Set LIFE=1"
-ui_print "  Volume DOWN = Set LIFE=0"
+ui_print "  Volume UP   = Set Enable LIFE Mode"
+ui_print "  Volume DOWN = Set Disable LIFE Mode"
+ui_print " "
+ui_print "Note: No need to reboot, effective immediately"
 ui_print " "
 
 # Ensure the module directory exists
@@ -26,17 +31,14 @@ while true; do
   EVENT=$(getevent -lqc 1)
 
   if echo "$EVENT" | grep -q "KEY_VOLUMEUP.*DOWN"; then
-    ui_print "Setting LIFE=1..."
+    ui_print "LIFE Mode enabled"
     echo "LIFE=1" > "$CONFIG_FILE"
-    ui_print "Done. Kamui.txt has been updated."
     break
   elif echo "$EVENT" | grep -q "KEY_VOLUMEDOWN.*DOWN"; then
-    ui_print "Setting LIFE=0..."
+    ui_print "LIFE Mode disabled"
     echo "LIFE=0" > "$CONFIG_FILE"
-    ui_print "Done. Kamui.txt has been updated."
     break
   fi
 done
 
 exit 0
-
