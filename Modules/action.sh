@@ -38,9 +38,6 @@ ui_print " "
 ui_print "Note: No need to reboot, effective immediately"
 ui_print " "
 
-# Ensure the module directory exists
-mkdir -p "$MODULE_DIR"
-
 # Wait for a volume key press using getevent
 while true; do
   # Capture a single key press event. We look for 'DOWN' state to avoid double triggers.
@@ -56,5 +53,16 @@ while true; do
     break
   fi
 done
+
+# Apply the new settings immediately
+su -c sh /data/adb/modules/BastionBattery/Kamui/KamuiBalanced.sh
+
+# Display the resulting max frequencies
+ui_print " "
+ui_print "Max Freq is:"
+for policy in /sys/devices/system/cpu/cpufreq/policy*; do
+  cat "$policy/scaling_max_freq"
+done
+ui_print " "
 
 exit 0

@@ -33,6 +33,84 @@ ui_print "Support Root : Magisk / KernelSU / APatch"
 ui_print " "
 sleep 1.5
 
+# ==================================
+# SOC Recognition Functions
+# ==================================
+soc_recognition_extra() {
+	[ -d /sys/class/kgsl/kgsl-3d0/devfreq ] && { SOC=2; return 0; }
+	[ -d /sys/devices/platform/kgsl-2d0.0/kgsl ] && { SOC=2; return 0; }
+	[ -d /sys/kernel/ged/hal ] && { SOC=1; return 0; }
+	[ -d /sys/kernel/tegra_gpu ] && { SOC=6; return 0; }
+	return 1
+}
+
+get_soc_getprop() {
+	local SOC_PROP="
+ro.board.platform
+ro.soc.model
+ro.hardware
+ro.chipname
+ro.hardware.chipname
+ro.vendor.soc.model.external_name
+ro.vendor.qti.soc_name
+ro.vendor.soc.model.part_name
+ro.vendor.soc.model
+"
+	for prop in $SOC_PROP; do
+		getprop "$prop"
+	done
+}
+
+recognize_soc() {
+	case "$1" in
+	*mt*|*MT*) SOC=1 ;;
+	*sm*|*qcom*|*SM*|*QCOM*|*Qualcomm*) SOC=2 ;;
+	*exynos*|*Exynos*|*EXYNOS*|*universal*|*samsung*|*erd*|*s5e*) SOC=3 ;;
+	*Unisoc*|*unisoc*|*ums*) SOC=4 ;;
+	*gs*|*Tensor*|*tensor*) SOC=5 ;;
+	*kirin*) SOC=7 ;;
+	esac
+	[ $SOC -eq 0 ] && return 1
+}
+
+# ==================================
+# SOC Detection Logic
+# ==================================
+ui_print "------------------------------------"
+ui_print "        RECOGNIZING CHIPSET         "
+ui_print "------------------------------------"
+# SOC CODE:
+# 1 = MediaTek, 2 = Qualcomm Snapdragon, 3 = Exynos, 4 = Unisoc
+# 5 = Google Tensor, 6 = Nvidia Tegra, 7 = Kirin
+SOC=0
+
+soc_recognition_extra
+[ $SOC -eq 0 ] && recognize_soc "$(get_soc_getprop)"
+[ $SOC -eq 0 ] && recognize_soc "$(grep -E "Hardware|Processor" /proc/cpuinfo | uniq | cut -d ':' -f 2 | sed 's/^[ \t]*//')"
+[ $SOC -eq 0 ] && recognize_soc "$(grep "model\sname" /proc/cpuinfo | uniq | cut -d ':' -f 2 | sed 's/^[ \t]*//')"
+
+# ==================================
+# Validate SOC and Abort if Unsupported
+# ==================================
+case "$SOC" in
+  1)
+    ui_print "- Detected SoC: MediaTek"
+    ui_print "- Device is supported. Continuing installation..."
+    ;;
+  2)
+    ui_print "- Detected SoC: Qualcomm Snapdragon"
+    ui_print "- Device is supported. Continuing installation..."
+    ;;
+  *)
+    ui_print "! Unsupported device detected."
+    ui_print "! This module is only for MediaTek and Snapdragon devices."
+    abort "Aborting installation."
+    ;;
+esac
+ui_print " "
+sleep 1.5
+
+
 ui_print "      INSTALLING        "
 ui_print " "
 sleep 1.5
