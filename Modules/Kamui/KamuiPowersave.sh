@@ -1,55 +1,73 @@
+#!/system/bin/sh
+
+# Tweak function to safely write values to system files
 tweak() {
     if [ -e "$2" ]; then
+        # Set permissions to read-write for owner, read-only for others
         chmod 644 "$2" >/dev/null 2>&1
+        # Write the value to the file
         echo "$1" > "$2" 2>/dev/null
+        # Set permissions to read-only for all to prevent unintended changes
         chmod 444 "$2" >/dev/null 2>&1
     fi
 }
 
 #############################
-# Set Governor To Schedhorizon / Schedutil
+# Helper functions
 #############################
 
-check_governor() {
-    local governor="$1"
-    local available_governors="$2"
-    echo "$available_governors" | grep -q "$governor"
+# Finds the middle available frequency for a given CPU policy.
+# This is used to cap the CPU frequency for power saving.
+which_midfreq() {
+	total_opp=$(wc -w <"$1")
+	mid_opp=$(((total_opp + 1) / 2))
+	tr ' ' '\n' <"$1" | grep -v '^[[:space:]]*$' | sort -nr | head -n "$mid_opp" | tail -n 1
 }
 
+# Sets CPU frequencies for Mediatek PowerHAL (PPM)
+cpufreq_ppm() {
+	cluster=-1
+	for path in /sys/devices/system/cpu/cpufreq/policy*; do
+		((cluster++))
+		cpu_midfreq=$(which_midfreq "$path/scaling_available_frequencies")
+		tweak "$cluster $cpu_midfreq" /proc/ppm/policy/hard_userlimit_max_cpu_freq
+		cpu_minfreq=$(<"$path/cpuinfo_min_freq")
+		tweak "$cluster $cpu_minfreq" /proc/ppm/policy/hard_userlimit_min_cpu_freq
+	done
+}
+
+cpufreq() {
+	for path in /sys/devices/system/cpu/*/cpufreq; do
+		cpu_midfreq=$(which_midfreq "$path/scaling_available_frequencies")
+		tweak "$cpu_midfreq" "$path/scaling_max_freq"
+		cpu_minfreq=$(<"$path/cpuinfo_min_freq")
+		tweak "$cpu_minfreq" "$path/scaling_min_freq"
+	done
+	chmod -f 444 /sys/devices/system/cpu/cpufreq/policy*/scaling_*_freq
+}
+
+#############################
+# Set Governor To Powersave
+#############################
+
+# As 'powersave' is guaranteed to be available, we set it directly for all policies.
 for path in /sys/devices/system/cpu/cpufreq/policy*; do
-    if [ -e "$path/scaling_available_governors" ]; then
-        available_governors=$(cat "$path/scaling_available_governors")
-        
-        if check_governor "schedhorizon" "$available_governors"; then
-            tweak schedhorizon "$path/scaling_governor"
-        elif check_governor "schedutil" "$available_governors"; then
-            tweak schedutil "$path/scaling_governor"
-        fi
-    fi
+    tweak "powersave" "$path/scaling_governor"
 done
 
 #############################
-# Set CPU Freq to Normal
+# Set CPU Freq to Mid-Freq
 #############################
 
-cluster=0
-	for path in /sys/devices/system/cpu/cpufreq/policy*; do
-		cpu_maxfreq=$(<"$path/cpuinfo_max_freq")
-		cpu_minfreq=$(<"$path/cpuinfo_min_freq")
-		tweak "$cluster $cpu_maxfreq" /proc/ppm/policy/hard_userlimit_max_cpu_freq
-		tweak "$cluster $cpu_minfreq" /proc/ppm/policy/hard_userlimit_min_cpu_freq
-		((cluster++))
-	done
-
-for path in /sys/devices/system/cpu/*/cpufreq; do
-		cpu_maxfreq=$(<"$path/cpuinfo_max_freq")
-		cpu_minfreq=$(<"$path/cpuinfo_min_freq")
-		tweak "$cpu_maxfreq" "$path/scaling_max_freq"
-		tweak "$cpu_minfreq" "$path/scaling_min_freq"
-	done
-	chmod -f 644 /sys/devices/system/cpu/cpufreq/policy*/scaling_*_freq
+# Check for Mediatek PowerHAL (PPM) to use the appropriate method
+if [ -d /proc/ppm ]; then
+    cpufreq_ppm
+else
+    cpufreq
+fi
 
 #############################
 # Power Save Mode Off
 #############################
+# Disable the system's own low power mode to let our tweaks take full control
 settings put global low_power 0
