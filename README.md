@@ -3,3 +3,6 @@
 Makes Battery More Efficient Without Reducing Performance
 
 Credit: @SRLIMIT3D & @levv20
+
+### Pro Tip:
+Enable LIFE mode in action.sh
