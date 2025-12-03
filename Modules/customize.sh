@@ -5,8 +5,6 @@ ui_print "           Bastion Battery          "
 ui_print "------------------------------------"
 ui_print "         By: Kanagawa Yamada        "
 ui_print "------------------------------------"
-ui_print "    Thanks to: SRLIMIT3D & levv20   "
-ui_print "------------------------------------"
 ui_print " "
 sleep 1.5
 
@@ -28,7 +26,7 @@ ui_print "------------------------------------"
 ui_print "            MODULE INFO             "
 ui_print "------------------------------------"
 ui_print "Name : Bastion Battery"
-ui_print "Version : 5.0"
+ui_print "Version : 6.0 - CPU"
 ui_print "Support Root : Magisk / KernelSU / APatch"
 ui_print " "
 sleep 1.5
