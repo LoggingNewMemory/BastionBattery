@@ -1,108 +1,53 @@
-#!/system/bin/sh
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <ctype.h>
 
-# Tweak function to safely write values to system files
-tweak() {
-    if [ -e "$2" ]; then
-        # Set permissions to read-write for owner, read-only for others
-        chmod 644 "$2" >/dev/null 2>&1
-        # Write the value to the file
-        echo "$1" > "$2" 2>/dev/null
-        # Set permissions to read-only for all to prevent unintended changes
-        chmod 444 "$2" >/dev/null 2>&1
-    fi
+const char* SCRIPT_SCREEN_ON = "/data/adb/modules/BastionBattery/Kamui/KamuiBalanced.sh";
+const char* SCRIPT_SCREEN_OFF = "/data/adb/modules/BastionBattery/Kamui/KamuiPowersave.sh";
+
+void execute_cmd(const char* cmd, char* result, size_t size) {
+    FILE *pipe = popen(cmd, "r");
+    if (!pipe) {
+        strncpy(result, "", size);
+        return;
+    }
+    if (fgets(result, size, pipe) != NULL) {
+        result[strcspn(result, "\n")] = 0;
+    } else {
+        strncpy(result, "", size);
+    }
+    pclose(pipe);
 }
 
-#############################
-# Helper functions
-#############################
-
-# Finds the middle available frequency for a given policy
-which_midfreq() {
-	total_opp=$(wc -w <"$1")
-	mid_opp=$(((total_opp + 1) / 2))
-	tr ' ' '\n' <"$1" | grep -v '^[[:space:]]*$' | sort -nr | head -n "$mid_opp" | tail -n 1
+void execute_script_for_state(int current_state, int *previous_state) {
+    if (current_state != *previous_state) {
+        if (current_state == 1) {
+            system(SCRIPT_SCREEN_ON);
+        } else {
+            system(SCRIPT_SCREEN_OFF);
+        }
+        *previous_state = current_state;
+    }
 }
 
-# Sets CPU frequencies for Mediatek PowerHAL (PPM)
-cpufreq_ppm() {
-	cluster=-1
-	for path in /sys/devices/system/cpu/cpufreq/policy*; do
-		((cluster++))
-		if [ "$LIFE" -eq 1 ]; then
-			# LIFE Mode (Enabled): Cap max freq to mid freq for power saving
-			cpu_midfreq=$(which_midfreq "$path/scaling_available_frequencies")
-			tweak "$cluster $cpu_midfreq" /proc/ppm/policy/hard_userlimit_max_cpu_freq
-		else
-			# Normal Mode (Disabled): Set max freq to the highest possible
-			cpu_maxfreq=$(<"$path/cpuinfo_max_freq")
-			tweak "$cluster $cpu_maxfreq" /proc/ppm/policy/hard_userlimit_max_cpu_freq
-		fi
+int main() {
+    int previous_state = -2;
+    char buffer[64];
 
-		# For both modes, the min freq is set to the absolute lowest
-		cpu_minfreq=$(<"$path/cpuinfo_min_freq")
-		tweak "$cluster $cpu_minfreq" /proc/ppm/policy/hard_userlimit_min_cpu_freq
-	done
+    while (1) {
+        execute_cmd("cmd deviceidle get screen", buffer, sizeof(buffer));
+
+        int current_state = 0; 
+        if (strstr(buffer, "true") != NULL) {
+            current_state = 1;
+        }
+
+        execute_script_for_state(current_state, &previous_state);
+
+        sleep(2);
+    }
+
+    return 0;
 }
-
-# Sets CPU frequencies using standard sysfs nodes
-cpufreq() {
-	for path in /sys/devices/system/cpu/*/cpufreq; do
-		if [ "$LIFE" -eq 1 ]; then
-			# LIFE Mode (Enabled): Cap max freq to mid freq for power saving
-			cpu_midfreq=$(which_midfreq "$path/scaling_available_frequencies")
-			tweak "$cpu_midfreq" "$path/scaling_max_freq"
-		else
-			# Normal Mode (Disabled): Set max freq to the highest possible
-			cpu_maxfreq=$(<"$path/cpuinfo_max_freq")
-			tweak "$cpu_maxfreq" "$path/scaling_max_freq"
-		fi
-
-		# For both modes, the min freq is set to the absolute lowest
-		cpu_minfreq=$(<"$path/cpuinfo_min_freq")
-		tweak "$cpu_minfreq" "$path/scaling_min_freq"
-	done
-	# Ensure frequency nodes are read-only
-	chmod -f 444 /sys/devices/system/cpu/cpufreq/policy*/scaling_*_freq
-}
-
-#############################
-# Set Governor To Schedhorizon / Schedutil
-#############################
-
-check_governor() {
-    local governor="$1"
-    local available_governors="$2"
-    echo "$available_governors" | grep -q "$governor"
-}
-
-for path in /sys/devices/system/cpu/cpufreq/policy*; do
-    if [ -e "$path/scaling_available_governors" ]; then
-        available_governors=$(cat "$path/scaling_available_governors")
-        
-        # Prefer schedhorizon, fall back to schedutil
-        if check_governor "schedhorizon" "$available_governors"; then
-            tweak "schedhorizon" "$path/scaling_governor"
-        elif check_governor "schedutil" "$available_governors"; then
-            tweak "schedutil" "$path/scaling_governor"
-        fi
-    fi
-done
-
-#############################
-# Set CPU Freq based on LIFE mode
-#############################
-
-# Read LIFE mode setting (1 for enabled, 0 for disabled)
-LIFE=$(cat /data/adb/modules/BastionBattery/Kamui.txt)
-
-# Check for Mediatek PowerHAL (PPM) to use the appropriate method
-if [ -d /proc/ppm ]; then
-    cpufreq_ppm
-else
-    cpufreq
-fi
-
-#############################
-# Power Save Mode Off
-#############################
-settings put global low_power 0
