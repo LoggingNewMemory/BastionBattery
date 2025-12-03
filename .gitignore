@@ -1,5 +1,4 @@
 megumi.sh
 /Sources/KamuiAuto/bin
-/Sources/inotify-tools/build_arm32
-/Sources/inotify-tools/build_arm64
+/Modules/Kamui/KamuiAuto/*
 Build/
