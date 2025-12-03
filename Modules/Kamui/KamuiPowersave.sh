@@ -47,15 +47,6 @@ cpufreq() {
 }
 
 #############################
-# Set Governor To Powersave
-#############################
-
-# As 'powersave' is guaranteed to be available, we set it directly for all policies.
-for path in /sys/devices/system/cpu/cpufreq/policy*; do
-    tweak "powersave" "$path/scaling_governor"
-done
-
-#############################
 # Set CPU Freq to Mid-Freq
 #############################
 
@@ -65,9 +56,3 @@ if [ -d /proc/ppm ]; then
 else
     cpufreq
 fi
-
-#############################
-# Power Save Mode Off
-#############################
-# Disable the system's own low power mode to let our tweaks take full control
-settings put global low_power 0

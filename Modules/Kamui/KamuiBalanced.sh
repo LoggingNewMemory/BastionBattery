@@ -66,29 +66,6 @@ cpufreq() {
 }
 
 #############################
-# Set Governor To Schedhorizon / Schedutil
-#############################
-
-check_governor() {
-    local governor="$1"
-    local available_governors="$2"
-    echo "$available_governors" | grep -q "$governor"
-}
-
-for path in /sys/devices/system/cpu/cpufreq/policy*; do
-    if [ -e "$path/scaling_available_governors" ]; then
-        available_governors=$(cat "$path/scaling_available_governors")
-        
-        # Prefer schedhorizon, fall back to schedutil
-        if check_governor "schedhorizon" "$available_governors"; then
-            tweak "schedhorizon" "$path/scaling_governor"
-        elif check_governor "schedutil" "$available_governors"; then
-            tweak "schedutil" "$path/scaling_governor"
-        fi
-    fi
-done
-
-#############################
 # Set CPU Freq based on LIFE mode
 #############################
 
@@ -101,8 +78,3 @@ if [ -d /proc/ppm ]; then
 else
     cpufreq
 fi
-
-#############################
-# Power Save Mode Off
-#############################
-settings put global low_power 0
