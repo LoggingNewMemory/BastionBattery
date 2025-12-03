@@ -1,30 +1,19 @@
 #!/system/bin/sh
 
-# Tweak function to safely write values to system files
 tweak() {
     if [ -e "$2" ]; then
-        # Set permissions to read-write for owner, read-only for others
         chmod 644 "$2" >/dev/null 2>&1
-        # Write the value to the file
         echo "$1" > "$2" 2>/dev/null
-        # Set permissions to read-only for all to prevent unintended changes
         chmod 444 "$2" >/dev/null 2>&1
     fi
 }
 
-#############################
-# Helper functions
-#############################
-
-# Finds the middle available frequency for a given CPU policy.
-# This is used to cap the CPU frequency for power saving.
 which_midfreq() {
 	total_opp=$(wc -w <"$1")
 	mid_opp=$(((total_opp + 1) / 2))
 	tr ' ' '\n' <"$1" | grep -v '^[[:space:]]*$' | sort -nr | head -n "$mid_opp" | tail -n 1
 }
 
-# Sets CPU frequencies for Mediatek PowerHAL (PPM)
 cpufreq_ppm() {
 	cluster=-1
 	for path in /sys/devices/system/cpu/cpufreq/policy*; do
@@ -46,13 +35,7 @@ cpufreq() {
 	chmod -f 444 /sys/devices/system/cpu/cpufreq/policy*/scaling_*_freq
 }
 
-#############################
-# Set CPU Freq to Mid-Freq
-#############################
-
-# Check for Mediatek PowerHAL (PPM) to use the appropriate method
 if [ -d /proc/ppm ]; then
     cpufreq_ppm
-else
-    cpufreq
 fi
+cpufreq
