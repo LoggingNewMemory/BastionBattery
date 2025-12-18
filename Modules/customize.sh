@@ -26,7 +26,7 @@ ui_print "------------------------------------"
 ui_print "            MODULE INFO             "
 ui_print "------------------------------------"
 ui_print "Name : Bastion Battery"
-ui_print "Version : 6.0 - CPU"
+ui_print "Version : 6.0"
 ui_print "Support Root : Magisk / KernelSU / APatch"
 ui_print " "
 sleep 1.5
