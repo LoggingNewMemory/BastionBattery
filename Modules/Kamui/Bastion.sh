@@ -1,6 +1,3 @@
-# Start Kamui Auto
-# By default. the Governor is sugov_ext (Yea Yamada use custom kernel)
-# So I set this to set the Governor to Schedhorizon / Schedutil (hehe)
 sh /data/adb/modules/BastionBattery/Kamui/KamuiBalanced.sh 
 
 # Notification 
