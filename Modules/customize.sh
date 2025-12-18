@@ -85,6 +85,9 @@ if [ -f "$SOURCE_EXTRACTED_PATH" ]; then
   ui_print "  - KamuiAuto installed successfully"
 else
   ui_print "! ERROR: Failed to extract KamuiAuto from zip path '$SOURCE_ZIP_PATH'"
+  # Clean up before aborting
+  rm -rf $TEMP_EXTRACT_DIR
+  abort "! Installation cancelled."
 fi
 
 # Clean up temporary extraction directory
